@@ -6,6 +6,7 @@ couplet
 output
 # C extensions
 *.so
+demo.py
 
 # Distribution / packaging
 .Python

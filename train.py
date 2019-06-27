@@ -27,7 +27,7 @@ def init_dataset(seq_path, tag_path, word_to_ix, max_seq_len, batch_size):
 def save_model(model, output_dir, epoch):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-    filename = os.path.join(output_dir, f"cnn_lstm_att_{epoch}.pkl")
+    filename = os.path.join(output_dir, f"cnn_lstm_att_{epoch:02}.pkl")
     logger.info(f'***** Save model `{filename}` *****')
     torch.save(model.state_dict(), filename)
 
