@@ -2,6 +2,10 @@
 基于CNN+Bi-LSTM+Attention 的自动对对联系统
 ## Model Structure
 ![structure](docs/struct.svg)
+## Dependencies
+* python 3.5+
+* pytorch 1.0+
+* flask (optional)
 ## Dataset
 数据集包含70多万条对联数据，下载请[点击这里](https://github.com/wb14123/couplet-dataset/releases/download/1.0/couplet.tar.gz)
 ## Usage
@@ -29,3 +33,14 @@
 | 上联         | 一曲笙歌春似海                     |
 | 下联         | 千门灯火夜如年                     |
 | AI预测的下联 | 三年灯色梦如山                     |
+
+## Screenshot
+### 命令行运行
+![Terminal Demo](docs/terminal_demo.png)
+### 网页运行
+![Web Demo](docs/web_demo.png)
+### Web API
+![Web API](docs/webapi_demo.png)
+## References
+* Self-Attention 层的设计参考了 [pytorch-pretrained-BERT](https://github.com/huggingface/pytorch-pretrained-BERT)
+* 一些结构的设计参考了 [NERs](https://github.com/WiseDoge/NERs)

@@ -1,11 +1,11 @@
-from typing import List, Mapping
-import os
-import torch
-import torch.nn as nn
+import config
 from model import CNNBiLSTMAtt
 from data_load import load_dataset, load_vocab
 from preprocess import create_attention_mask
-import config
+import torch
+import torch.nn as nn
+from typing import List, Mapping
+import os
 
 
 class QAContext(object):
