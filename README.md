@@ -1,7 +1,7 @@
 # CoupletAI
 基于CNN+Bi-LSTM+Attention 的自动对对联系统
 ## Model Structure
-![structure](docs/sturct.svg)
+![structure](docs/struct.svg)
 ## Dataset
 数据集包含70多万条对联数据，下载请[点击这里](https://github.com/wb14123/couplet-dataset/releases/download/1.0/couplet.tar.gz)
 ## Usage
