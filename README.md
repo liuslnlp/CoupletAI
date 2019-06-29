@@ -15,6 +15,14 @@
 * 运行 `webdemo.py` 可在Web端进行AI对对联
 ## Using Pre-trained Model
 [点击这里](https://github.com/WiseDoge/CoupletAI/releases/download/v1.0/cnn_lstm_att_20.pkl)下载预训练模型，并将模型放入 `config.ouput_dir` 所指定的文件夹（默认为`output`）中，然后即可运行 `qa.py` 或 `webdemo.py`。  
+## Using Docker
+1. Pull image  
+```docker pull wisedoge/coupletai```  
+2. Run  
+```docker run -d -p 5000:5000 --name couplet_server wisedoge/coupletai python webdemo.py```  
+3. Stop  
+```docker container stop couplet_server```  
+
 ## Results
 下面展示一些结果  
 
