@@ -111,15 +111,14 @@ class SelfAttentionLayer(nn.Module):
 
 
 class CNNBiLSTMAtt(nn.Module):
-    def __init__(self, vocab_size:int, embed_dim:int, hidden_dim:int, tag_dim:int):
+    def __init__(self, vocab_size:int, embed_dim:int, hidden_dim:int):
         super().__init__()
         self.embedding = nn.Embedding(vocab_size, embed_dim)
         self.conv = CNNLayer(embed_dim, hidden_dim)
         self.bilstm = BiLSTMLayer(hidden_dim, hidden_dim)
-        self.hidden2tag = nn.Linear(hidden_dim, tag_dim)
+        self.hidden2tag = nn.Linear(hidden_dim, vocab_size)
         self.att = SelfAttentionLayer(hidden_dim)
         self.norm = LayerNorm(hidden_dim)
-        self.tag_dim = tag_dim
 
     def forward(self, x, exted_att_mask):
         embeds = self.embedding(x)

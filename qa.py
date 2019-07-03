@@ -48,7 +48,7 @@ def create_qa_context(model_path: str, word_to_ix_path: str,
                       embed_dim: int, hidden_dim: int, device) -> QAContext:
     word_dict = load_vocab(word_to_ix_path)
     vocab_size = len(word_dict)
-    model = CNNBiLSTMAtt(vocab_size, embed_dim, hidden_dim, vocab_size)
+    model = CNNBiLSTMAtt(vocab_size, embed_dim, hidden_dim)
     if not torch.cuda.is_available():
         model.load_state_dict(torch.load(model_path, map_location='cpu'))
     else:
@@ -60,5 +60,6 @@ if __name__ == "__main__":
     output_dir = config.ouput_dir
     vocab_path = f'./{config.data_dir}/vocabs'
     model_path = max(os.listdir(output_dir))
+    print(f'Model filename: {model_path}')
     ctx = create_qa_context(f'./{output_dir}/{model_path}', vocab_path, config.embed_dim, config.hidden_dim, device)
     ctx.run_console_qa(end_flag='q')

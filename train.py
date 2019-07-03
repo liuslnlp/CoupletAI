@@ -50,14 +50,14 @@ def main():
 
     logger.info(f"***** Loading vocab *****")
     word_to_ix = load_vocab(vocab_path)
+    vocab_size = len(word_to_ix)
 
     logger.info(f"***** Initializing dataset *****")
     train_dataloader = init_dataset(
         seq_path, tag_path, word_to_ix, max_seq_len, batch_size)
 
     logger.info(f"***** Training *****")
-    model = CNNBiLSTMAtt(len(word_to_ix), embed_dim,
-                         hidden_dim, len(word_to_ix))
+    model = CNNBiLSTMAtt(vocab_size, embed_dim, hidden_dim)
     model.to(device)
     model.train()
     optimizer = optim.Adam(model.parameters(), lr=lr)
@@ -70,7 +70,7 @@ def main():
             batch = tuple(t.to(device) for t in batch)
             seq_ids, exted_att_mask, tag_ids = batch
             logits = model(seq_ids, exted_att_mask)
-            loss = loss_func(logits.view(-1, model.tag_dim), tag_ids.view(-1))
+            loss = loss_func(logits.view(-1, vocab_size), tag_ids.view(-1))
             loss.backward()
             optimizer.step()
             if step % 100 == 0:
