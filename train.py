@@ -8,7 +8,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 import os
 import logging
-
+import argparse
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -32,14 +32,23 @@ def save_model(model, output_dir, epoch):
     torch.save(model.state_dict(), filename)
 
 
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--epochs", default=20, type=int)
+    parser.add_argument("--batch_size", default=32, type=int)
+    parser.add_argument("--lr", default=0.001, type=float)
+    parser.add_argument("--max_len", default=32, type=int)
+    return parser.parse_args()
+                        
 def main():
+    args = get_args()
     seq_path = f'{config.data_dir}/train/in.txt'
     tag_path = f'{config.data_dir}/train/out.txt'
     vocab_path = f'{config.data_dir}/vocabs'
-    max_seq_len = 32
-    batch_size = 32
-    epochs = 30
-    lr = 0.001
+    epochs = args.epochs
+    batch_size = args.batch_size
+    lr = args.lr
+    max_seq_len = args.max_len
     embed_dim = config.embed_dim
     hidden_dim = config.hidden_dim
     output_dir = config.ouput_dir

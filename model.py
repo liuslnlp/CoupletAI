@@ -116,13 +116,18 @@ class CNNBiLSTMAtt(nn.Module):
         self.embedding = nn.Embedding(vocab_size, embed_dim)
         self.conv = CNNLayer(embed_dim, hidden_dim)
         self.bilstm = BiLSTMLayer(hidden_dim, hidden_dim)
-        self.hidden2tag = nn.Linear(hidden_dim, vocab_size)
+        self.linear = nn.Linear(hidden_dim, embed_dim)
+        self.decoder = nn.Linear(embed_dim, vocab_size, bias=False)
+        self.bias = nn.Parameter(torch.zeros(vocab_size))
+        self.decoder.weight = self.embedding.weight
         self.att = SelfAttentionLayer(hidden_dim)
         self.norm = LayerNorm(hidden_dim)
 
     def forward(self, x, exted_att_mask):
         embeds = self.embedding(x)
-        cnn_out = self.conv(embeds)
-        lstm_out, _ = self.bilstm(cnn_out)
-        normout = self.norm(lstm_out + self.att(lstm_out, exted_att_mask))
-        return self.hidden2tag(normout)
+        hidden_states = self.conv(embeds)
+        hidden_states, _ = self.bilstm(hidden_states)
+        hidden_states = self.norm(hidden_states + self.att(hidden_states, exted_att_mask))
+        embeds = self.linear(hidden_states)
+        logits = self.decoder(embeds) + self.bias
+        return logits
