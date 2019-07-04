@@ -16,12 +16,12 @@ class QAContext(object):
         self.ix2word = {v: k for k, v in self.word_dict.items()}
         self.model.to(self.device)
         self.model.eval()
-        self.model = self._build_traced_script_module()
+    #     self.model = self._build_traced_script_module()
 
-    def _build_traced_script_module(self):
-        example = torch.ones(1, 3).long().to(self.device)
-        mask = create_attention_mask(torch.ones_like(example).to(self.device)) 
-        return torch.jit.trace(self.model, (example, mask))
+    # def _build_traced_script_module(self):
+    #     example = torch.ones(1, 3).long().to(self.device)
+    #     mask = create_attention_mask(torch.ones_like(example).to(self.device)) 
+    #     return torch.jit.trace(self.model, (example, mask))
 
     def predict(self, seq: List[List[str]]) -> str:
         seq = [self.word_dict.get(word, self.word_dict['[UNK]'])
