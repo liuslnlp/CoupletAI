@@ -11,6 +11,8 @@ class BiLSTMLayer(nn.Module):
     """
     def __init__(self, input_dim: int, hidden_dim: int):
         super().__init__()
+        if hidden_dim % 2:
+            raise ValueError("hidden_dim must be divisible by 2")
         self.bilstm = nn.LSTM(input_dim, hidden_dim // 2,
                               num_layers=1, bidirectional=True, batch_first=True)
 
