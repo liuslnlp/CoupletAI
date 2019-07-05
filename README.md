@@ -23,7 +23,7 @@
 3. Stop  
 ```docker container stop couplet_server```  
 
-## Using Google Colab
+## Training in Google Colab
 ```https://colab.research.google.com/drive/1bqPiJZEiW-j4FcKKzE-WDV6frTsLCs1b```
 
 ## Results
