@@ -1,5 +1,5 @@
 # CoupletAI
-基于CNN+Bi-LSTM+Attention 的自动对对联系统。
+基于CNN+Bi-LSTM+Attention 的自动对对联系统。一般来讲，给定一句话生成另一句话是序列生成问题，本项目根据上下联字数相等的特点将其转化为序列标注问题，即用下联去标注上联。
 ## Model Structure
 ![structure](docs/struct.svg)
 ## Dependencies
