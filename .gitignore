@@ -6,8 +6,10 @@ couplet
 output
 # C extensions
 *.so
+.idea
+*.gz
 demo.py
-
+*.aria2
 # Distribution / packaging
 .Python
 build/

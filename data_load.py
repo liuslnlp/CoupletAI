@@ -1,4 +1,13 @@
 from typing import Dict, Tuple, List
+import torch
+from pathlib import Path
+
+def load_tensor_dataset(path):
+    path = Path(path)
+    seqs_tensor = torch.load(path / 'seqs_tensor.pkl')
+    seqs_mask = torch.load(path / 'seqs_mask.pkl')
+    tags_tesnor = torch.load(path / 'tags_tesnor.pkl')
+    return seqs_tensor, seqs_mask, tags_tesnor
 
 
 def load_vocab(path: str) -> Dict[str, int]:

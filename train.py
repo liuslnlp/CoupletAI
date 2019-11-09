@@ -1,7 +1,7 @@
 import config
-from model import CNNBiLSTMAtt
-from data_load import load_dataset, load_vocab
-from preprocess import create_dataset, create_attention_mask
+from model import CNNBiLSTMAtt, TraForEncoder
+from data_load import load_dataset, load_vocab, load_tensor_dataset
+from preprocess import create_dataset, create_attention_mask, create_transformer_attention_mask
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader, TensorDataset
 import os
 import logging
 import argparse
+from pathlib import Path
 
 
 logging.basicConfig(level=logging.INFO,
@@ -16,43 +17,48 @@ logging.basicConfig(level=logging.INFO,
 logger = logging.getLogger(__name__)
 
 
-def init_dataset(seq_path, tag_path, word_to_ix, max_seq_len, batch_size):
-    seqs, tags = load_dataset(seq_path, tag_path)
-    seqs, masks, tags = create_dataset(
-        seqs, tags, word_to_ix, max_seq_len, word_to_ix['[PAD]'])
-    extended_attention_mask = create_attention_mask(masks)
+def init_dataset(path, batch_size):
+    # extended_attention_mask = create_attention_mask(masks)
+    seqs, masks, tags = load_tensor_dataset(path)
+    extended_attention_mask = create_transformer_attention_mask(masks)
     dataset = TensorDataset(seqs, extended_attention_mask, tags)
     return DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
 
 def save_model(model, output_dir, epoch):
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-    filename = os.path.join(output_dir, f"cnn_lstm_att_{epoch:02}.pkl")
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    model = model.module if hasattr(model, 'module') else model
+    filename = output_dir / f"transformer_{epoch:02}.pkl"
     logger.info(f'***** Save model `{filename}` *****')
     torch.save(model.state_dict(), filename)
 
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--epochs", default=20, type=int)
-    parser.add_argument("--batch_size", default=32, type=int)
-    parser.add_argument("--lr", default=0.001, type=float)
-    parser.add_argument("--max_len", default=32, type=int)
+    parser.add_argument("--batch_size", default=768, type=int)
+    parser.add_argument("--lr", default=0.0001, type=float)
+    # parser.add_argument("--max_len", default=32, type=int)
     parser.add_argument("--no_cuda", action='store_true')
+    parser.add_argument("--fp16", action='store_true')
+    parser.add_argument("--fp16_opt_level", default='O1', type=str)
+    parser.add_argument("--max_grad_norm", default=1.0, type=float)
+    parser.add_argument("--dir", default='tensor_dataset', type=str)
+
     return parser.parse_args()
+
+# H 4 N 3 Loss:5.20
+# H 2 N 2 Loss:5.20
 
 
 def main():
-    seq_path = f'{config.data_dir}/train/in.txt'
-    tag_path = f'{config.data_dir}/train/out.txt'
     vocab_path = f'{config.data_dir}/vocabs'
 
     args = get_args()
     epochs = args.epochs
     batch_size = args.batch_size
     lr = args.lr
-    max_seq_len = args.max_len
-    
+
     embed_dim = config.embed_dim
     hidden_dim = config.hidden_dim
     output_dir = config.ouput_dir
@@ -65,16 +71,28 @@ def main():
     vocab_size = len(word_to_ix)
 
     logger.info(f"***** Initializing dataset *****")
-    train_dataloader = init_dataset(
-        seq_path, tag_path, word_to_ix, max_seq_len, batch_size)
+    train_dataloader = init_dataset(args.dir, batch_size)
+
+
 
     logger.info(f"***** Training *****")
-    model = CNNBiLSTMAtt(vocab_size, embed_dim, hidden_dim)
-    model.to(device)
-    model.train()
+    # model = CNNBiLSTMAtt(vocab_size, embed_dim, hidden_dim)
+    model = TraForEncoder(vocab_size, embed_dim, hidden_dim)
     optimizer = optim.Adam(model.parameters(), lr=lr)
-    loss_func = nn.CrossEntropyLoss(ignore_index=word_to_ix['[PAD]'])
+    model.to(device)
 
+    if args.fp16:
+        try:
+            from apex import amp
+            amp.register_half_function(torch, 'einsum')
+            model, optimizer = amp.initialize(model, optimizer, opt_level=args.fp16_opt_level)
+        except ImportError:
+            raise ImportError("Please install apex from https://www.github.com/nvidia/apex to use fp16 training.")
+    if torch.cuda.device_count() > 1:
+        model = torch.nn.DataParallel(model)
+    model.train()
+    loss_func = nn.CrossEntropyLoss(ignore_index=word_to_ix['[PAD]'])
+    logger.info(f"Num GPU {torch.cuda.device_count()}")
     for epoch in range(epochs):
         logger.info(f"***** Epoch {epoch} *****")
         for step, batch in enumerate(train_dataloader):
@@ -83,7 +101,16 @@ def main():
             seq_ids, exted_att_mask, tag_ids = batch
             logits = model(seq_ids, exted_att_mask)
             loss = loss_func(logits.view(-1, vocab_size), tag_ids.view(-1))
-            loss.backward()
+            if torch.cuda.device_count() > 1:
+                loss = loss.mean()
+            if args.fp16:
+                with amp.scale_loss(loss, optimizer) as scaled_loss:
+                    scaled_loss.backward()
+                torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), args.max_grad_norm)
+            else:
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
+
             optimizer.step()
             if step % 100 == 0:
                 logger.info(

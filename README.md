@@ -1,5 +1,14 @@
 # CoupletAI
-基于CNN+Bi-LSTM+Attention 的自动对对联系统。一般来讲，给定一句话生成另一句话是序列生成问题，本项目根据上下联字数相等的特点将其转化为序列标注问题，即用下联去标注上联。
+基于CNN+Bi-LSTM+Attention 的自动对对联系统。一般来讲，给定一句话生成另一句话是序列生成问题，本项目根据上下联字数相等的特点将其转化为序列标注问题，即用下联去标注上联。  
+### Update 2019.11.9  
+本次更新了以下内容:
+* 新增了 Transformer 模型
+* 调整了预处理的方式  
+* 增加了多 GPU 训练
+* 增加了 16 位浮点数训练(float16, 需要 NVIDIA 的 apex 库支持)
+
+**此项目亦是本人<语言分析与机器翻译>课程的大作业**  
+
 ## Model Structure
 ![structure](docs/struct.svg)
 ## Dependencies
@@ -14,7 +23,7 @@
 * 运行 `qa.py` 可在控制台进行AI对对联
 * 运行 `webdemo.py` 可在Web端进行AI对对联
 ## Using Pre-trained Model
-[点击这里](https://github.com/WiseDoge/CoupletAI/releases/download/v1.0/cnn_lstm_att_20.pkl)下载预训练模型，并将模型放入 `config.ouput_dir` 所指定的文件夹（默认为`output`）中，再[点击这里](https://github.com/WiseDoge/CoupletAI/releases/download/v1.0/vocabs)下载词表，并将其放入`couplet`文件夹（若文件夹不存在则创建），然后即可运行 `qa.py` 或 `webdemo.py`。  
+[点击这里](https://github.com/WiseDoge/CoupletAI/releases/download/v1.0/cnn_lstm_att_20.pkl)下载预训练模型(只提供LSTM模型)，并将模型放入 `config.ouput_dir` 所指定的文件夹（默认为`output`）中，再[点击这里](https://github.com/WiseDoge/CoupletAI/releases/download/v1.0/vocabs)下载词表，并将其放入`couplet`文件夹（若文件夹不存在则创建），然后即可运行 `qa.py` 或 `webdemo.py`。  
 ## Using Docker
 1. Pull image  
 ```docker pull wisedoge/coupletai```  
@@ -27,7 +36,7 @@
 ```https://colab.research.google.com/drive/1bqPiJZEiW-j4FcKKzE-WDV6frTsLCs1b```
 
 ## Results
-下面展示一些结果  
+下面展示一些结果(CNN+Bi-LSTM+Attention模型)  
 
 |              | 对联                               |
 | ------------ | ---------------------------------- |
