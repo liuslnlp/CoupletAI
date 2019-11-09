@@ -1,6 +1,8 @@
-from typing import Dict, Tuple, List
-import torch
 from pathlib import Path
+from typing import Dict, Tuple, List
+
+import torch
+
 
 def load_tensor_dataset(path):
     path = Path(path)

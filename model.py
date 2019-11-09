@@ -1,14 +1,17 @@
+import math
+from typing import Optional
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from typing import Optional
-import math
+
 
 class BiLSTMLayer(nn.Module):
     """Bi-LSTM layer.
 
     This module implements a Bi-LSTM layer.  
     """
+
     def __init__(self, input_dim: int, hidden_dim: int):
         super().__init__()
         if hidden_dim % 2:
@@ -19,6 +22,7 @@ class BiLSTMLayer(nn.Module):
     def forward(self, x):
         # x.shape=(batch_size, max_seq_len, input_dim)
         return self.bilstm(x)
+
 
 class CNNLayer(nn.Module):
     def __init__(self, input_dim: int, hidden_dim: int):
@@ -35,6 +39,7 @@ class CNNLayer(nn.Module):
         cnn_out = self.conv(cnn_in).permute(0, 2, 1)
         return F.relu(cnn_out)
 
+
 class LayerNorm(nn.Module):
     def __init__(self, hidden_size: int, eps: Optional[float] = 1e-12):
         super().__init__()
@@ -50,6 +55,10 @@ class LayerNorm(nn.Module):
 
 
 class SelfAttentionLayer(nn.Module):
+    """
+    Reference: https://github.com/huggingface/transformers
+    """
+
     def __init__(self, hidden_dim: int, num_heads: Optional[int] = 4, dropout_prob: Optional[float] = 0.2):
         super().__init__()
         self.num_att_heads = num_heads
@@ -105,15 +114,13 @@ class SelfAttentionLayer(nn.Module):
         context_layer = context_layer.permute(0, 2, 1, 3).contiguous()
         # new_context_layer_shape=(batch_size, max_seq_len, all_head_size)
         new_context_layer_shape = context_layer.size()[
-            :-2] + (self.all_head_size,)
+                                  :-2] + (self.all_head_size,)
         context_layer = context_layer.view(*new_context_layer_shape)
         return context_layer
 
 
-
-
 class CNNBiLSTMAtt(nn.Module):
-    def __init__(self, vocab_size:int, embed_dim:int, hidden_dim:int):
+    def __init__(self, vocab_size: int, embed_dim: int, hidden_dim: int):
         super().__init__()
         self.embedding = nn.Embedding(vocab_size, embed_dim)
         self.conv = CNNLayer(embed_dim, hidden_dim)
@@ -129,14 +136,15 @@ class CNNBiLSTMAtt(nn.Module):
         normout = self.norm(lstm_out + self.att(lstm_out, exted_att_mask))
         return self.hidden2tag(normout)
 
+
 class TraForEncoder(nn.Module):
-    def __init__(self, vocab_size:int, embed_dim:int, hidden_dim:int):
+    def __init__(self, vocab_size: int, embed_dim: int, hidden_dim: int):
         super().__init__()
         self.embedding = nn.Embedding(vocab_size, embed_dim)
         self.hidden2tag = nn.Linear(hidden_dim, vocab_size)
         self.mapper = nn.Linear(embed_dim, hidden_dim)
-        layer = nn.TransformerEncoderLayer(hidden_dim, 2, dim_feedforward=512)
-        self.encoder = nn.TransformerEncoder(layer, 2)
+        layer = nn.TransformerEncoderLayer(hidden_dim, 4, dim_feedforward=512)
+        self.encoder = nn.TransformerEncoder(layer, 4)
 
     def forward(self, x, key_padding_mask):
         embeds = self.embedding(x)

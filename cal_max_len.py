@@ -1,6 +1,8 @@
-import data_load
-import config
+"""Use once"""
 from typing import List
+
+import config
+import data_load
 
 
 def cal_max_seq_len(seqs: List[List[str]]) -> int:

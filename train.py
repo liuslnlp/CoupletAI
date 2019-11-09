@@ -1,16 +1,17 @@
-import config
-from model import CNNBiLSTMAtt, TraForEncoder
-from data_load import load_dataset, load_vocab, load_tensor_dataset
-from preprocess import create_dataset, create_attention_mask, create_transformer_attention_mask
+import argparse
+import logging
+from pathlib import Path
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
-import os
-import logging
-import argparse
-from pathlib import Path
+from torch.utils.tensorboard import SummaryWriter
 
+import config
+from data_load import load_vocab, load_tensor_dataset
+from model import TraForEncoder
+from preprocess import create_transformer_attention_mask
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -44,17 +45,20 @@ def get_args():
     parser.add_argument("--fp16_opt_level", default='O1', type=str)
     parser.add_argument("--max_grad_norm", default=1.0, type=float)
     parser.add_argument("--dir", default='tensor_dataset', type=str)
+    parser.add_argument("--logdir", default='runs', type=str)
+
 
     return parser.parse_args()
 
 # H 4 N 3 Loss:5.20
-# H 2 N 2 Loss:5.20
+# H 2 N 2 Loss:5.25
+# H 8 N 5 Loss:
 
 
 def main():
     vocab_path = f'{config.data_dir}/vocabs'
-
     args = get_args()
+    tb = SummaryWriter(args.logdir)
     epochs = args.epochs
     batch_size = args.batch_size
     lr = args.lr
@@ -93,6 +97,7 @@ def main():
     model.train()
     loss_func = nn.CrossEntropyLoss(ignore_index=word_to_ix['[PAD]'])
     logger.info(f"Num GPU {torch.cuda.device_count()}")
+    global_step = 0
     for epoch in range(epochs):
         logger.info(f"***** Epoch {epoch} *****")
         for step, batch in enumerate(train_dataloader):
@@ -113,8 +118,10 @@ def main():
 
             optimizer.step()
             if step % 100 == 0:
+                tb.add_scalar('loss', loss.item(), global_step)
                 logger.info(
                     f"[epoch]: {epoch}, [batch]: {step}, [loss]: {loss.item()}")
+            global_step += 1
         save_model(model, output_dir, epoch + 1)
 
 

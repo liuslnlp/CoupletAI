@@ -1,8 +1,10 @@
-import torch
-from typing import Dict, Tuple, List, Mapping
-from tqdm import tqdm, trange
-from pathlib import Path
 import argparse
+from pathlib import Path
+from typing import Tuple, List, Mapping
+
+import torch
+from tqdm import trange
+
 import config
 from data_load import load_vocab, load_dataset
 
@@ -31,6 +33,7 @@ def create_dataset(seqs: List[List[str]],
             tags_tesnor[i, j] = word_to_ix.get(tag, word_to_ix['[UNK]'])
     return seqs_tensor.long(), seqs_mask, tags_tesnor.long()
 
+
 def save_dataset(seqs_tensor, seqs_mask, tags_tesnor, path):
     path = Path(path)
     path.mkdir(parents=True, exist_ok=True)
@@ -46,17 +49,19 @@ def create_attention_mask(raw_mask: torch.Tensor) -> torch.Tensor:
     extended_attention_mask = (1.0 - extended_attention_mask) * -10000.0
     return extended_attention_mask.float()
 
+
 def create_transformer_attention_mask(raw_mask: torch.Tensor) -> torch.Tensor:
     """Convert mask to transformer attention mask.
     """
     return (1 - raw_mask).bool()
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--dir", default='tensor_dataset', type=str)
     parser.add_argument("--max_len", default=32, type=int)
 
-    args =  parser.parse_args()
+    args = parser.parse_args()
     seq_path = f'{config.data_dir}/train/in.txt'
     tag_path = f'{config.data_dir}/train/out.txt'
     vocab_path = f'{config.data_dir}/vocabs'

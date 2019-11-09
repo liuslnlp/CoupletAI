@@ -1,11 +1,13 @@
-import config
-from model import CNNBiLSTMAtt, TraForEncoder
-from data_load import load_dataset, load_vocab
-from preprocess import create_attention_mask, create_transformer_attention_mask
+import os
+from typing import List, Mapping
+
 import torch
 import torch.nn as nn
-from typing import List, Mapping
-import os
+
+import config
+from data_load import load_vocab
+from model import TraForEncoder
+from preprocess import create_transformer_attention_mask
 
 
 class QAContext(object):
@@ -44,7 +46,7 @@ class QAContext(object):
             print(f"下联：{answer}")
 
 
-def create_qa_context(model_path: str, word_to_ix_path: str, 
+def create_qa_context(model_path: str, word_to_ix_path: str,
                       embed_dim: int, hidden_dim: int, device) -> QAContext:
     word_dict = load_vocab(word_to_ix_path)
     vocab_size = len(word_dict)
@@ -54,6 +56,7 @@ def create_qa_context(model_path: str, word_to_ix_path: str,
     else:
         model.load_state_dict(torch.load(model_path))
     return QAContext(model, word_dict, device)
+
 
 if __name__ == "__main__":
     device = torch.device('cpu')
