@@ -10,6 +10,10 @@ output
 *.gz
 demo.py
 *.aria2
+log
+runs
+dataset
+.vscode
 # Distribution / packaging
 .Python
 build/

@@ -1,38 +1,24 @@
 # CoupletAI
-基于CNN+Bi-LSTM+Attention 的自动对对联系统。一般来讲，给定一句话生成另一句话是序列生成问题，本项目根据上下联字数相等的特点将其转化为序列标注问题，即用下联去标注上联。  
-### Update 2019.11.9  
-本次更新了以下内容:
-* 新增了 Transformer 模型,并设为默认模型(如需使用 CNN+Bi-LSTM+Attention 模型, 须要修改代码).
-* 调整了预处理数据的方式,数据先转换为 Tensor 并缓存后再参与训练.   
-* 增加了多 GPU 训练
-* 增加了 TensorBoard
-* 增加了 16 bit 浮点数训练(float16, 需要 NVIDIA 的 apex 库支持)
-
-**此项目亦是本人<语言分析与机器翻译>课程的大作业**  
-
-## Model Structure
-![structure](docs/struct.svg)
+用 PyTorch 实现的自动对对联系统，支持多种模型。一般来讲，给定一句话生成另一句话是序列生成问题，本项目根据上下联字数相等的特点将其转化为序列标注问题，即用下联去标注上联。  
 ## Dependencies
-* python 3.5+
-* pytorch 1.0+
+* python 3.6+
+* pytorch 1.2+
 * flask (optional)
 ## Dataset
-数据集包含70多万条对联数据，下载请[点击这里](https://github.com/wb14123/couplet-dataset/releases/download/1.0/couplet.tar.gz)。
+数据集包含70多万条对联数据(26MB)，下载请[点击这里](https://github.com/wb14123/couplet-dataset/releases/download/1.0/couplet.tar.gz)，或者[百度云](https://pan.baidu.com/s/1Zqnqq0VqZxv2c4jTNlZJGQ)(提取码: wude)。
 ## Usage
 * 将下载到的数据集解压到当前目录（解压后的文件夹名称为`couplet`）
-* 运行 `train.py` 进行训练
-* 运行 `qa.py` 可在控制台进行AI对对联
-* 运行 `webdemo.py` 可在Web端进行AI对对联
+* 运行 `preprocess.py` 进行数据预处理
+* 运行 `main.py [-m model type]` 进行训练
+* 运行 `clidemo.py <-p model path>` 可在控制台进行AI对对联
+* 运行 `webdemo.py <model path>` 可在Web端进行AI对对联
+
+命令行参数的详细说明见文件内，你也可以在 `module/model.py` 中定义你自己的模型。
 ## Using Docker 
 ```docker pull wisedoge/coupletai```  
 
-## Training in Google Colab
-```https://colab.research.google.com/drive/1bqPiJZEiW-j4FcKKzE-WDV6frTsLCs1b```
-
-## Results
-下面展示一些结果(CNN+Bi-LSTM+Attention模型)  
-
-|              | 对联                               |
+## Results Show
+|   #          | 对联                               |
 | ------------ | ---------------------------------- |
 | 上联         | 放不开眼底乾坤，何必登斯楼把酒     |
 | 下联         | 吞得尽胸中云梦，方许对古人言诗     |
@@ -57,6 +43,3 @@
 ![Web Demo](docs/web_demo.png)
 ### Web API
 ![Web API](docs/webapi_demo.png)
-## References
-* Self-Attention 层的设计参考了 [pytorch-pretrained-BERT](https://github.com/huggingface/pytorch-pretrained-BERT)
-* 一些结构的设计参考了 [NERs](https://github.com/WiseDoge/NERs)
